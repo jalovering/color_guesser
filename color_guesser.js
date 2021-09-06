@@ -19,7 +19,7 @@ function createGuessableSquare(x,y,red,green,blue,true_color_array,score) {
         .attr('y', y)
         .attr('width', SIZE)
         .attr('height', SIZE)
-        .attr('stroke', 'gray')
+        .attr('stroke', 'white')
         .attr('fill', `rgb(${red}, ${green}, ${blue})`)
         .on('mouseover', function() {
             d3.select(this)
