@@ -176,15 +176,15 @@ function generateState(score, isFake) {
     for (let i = 0; i < 8; i++) {
 
         // generate random variance for each guessable color
-        var red_var = randInt(20,30)
+        var red_var = randInt(15,20)
         if (randInt(0,1) == 0) {
             red_var *= -1
         }
-        var green_var = randInt(20,30)
+        var green_var = randInt(15,20)
         if (randInt(0,1) == 0) {
             green_var *= -1
         }
-        var blue_var = randInt(20,30)
+        var blue_var = randInt(15,20)
         if (randInt(0,1) == 0) {
             blue_var *= -1
         }
