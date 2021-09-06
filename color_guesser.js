@@ -54,12 +54,19 @@ function createMainSquare(red,green,blue) {
   }
 
 // generate timer square based on color
-function createTimer(red,green,blue) {
+function createTimer(red,green,blue,isFake) {
     
-    time_total = 5000 // duration in milliseconds
     timer_size = 6
-    resetTimeout = setTimeout(function() {restartGame()}, time_total);
 
+    if (isFake) {
+        time_total = 0 // set time to zero so timer does not run
+
+    }
+    else {
+        time_total = 5000 // duration in milliseconds
+        resetTimeout = setTimeout(function() {openMenu(score, [red,green,blue])}, time_total);
+    }
+    
     svg.append('rect') // border
         .attr('x', B - timer_size)
         .attr('y', B - timer_size)
@@ -138,7 +145,7 @@ function randInt(min, max) {
   }
 
 // generate a random game state
-function generateState(score) {
+function generateState(score, isFake) {
 
     // has the identical guessable square been set yet
     var identicalPicked = false
@@ -150,7 +157,7 @@ function generateState(score) {
     var true_color_array = [red, green, blue]
 
     // generate timer
-    createTimer(red, green, blue)
+    createTimer(red, green, blue, isFake)
 
     // generate main square
     createMainSquare(red, green, blue)
@@ -201,14 +208,15 @@ function generateState(score) {
             createGuessableSquare(x, y, red + red_var, green + green_var, blue + blue_var, true_color_array, score)
         }
     }
-    return
+    return true_color_array
 }
 
 // generate a new state with a score of zero
-function restartGame() {
+function restartGame(isFake) {
     d3.selectAll("svg > *").remove(); // clear svg
     score = 0 // reset score
-    generateState(score)
+    true_color_array = generateState(score, isFake)
+    return true_color_array
 }
 
 // generate a new state with a score increased by one
@@ -230,8 +238,71 @@ function validateChoice(chosen_color, true_color_array, score) {
         continueGame(score)
     }
     else {
-        restartGame()
+        openMenu(score, true_color_array)
     }
 }
 
-restartGame()
+// generate a menu screen based on true color of the last game state
+function openMenu(score, true_color_array) {
+
+    // set true color string
+    true_color = `rgb(${true_color_array[0]}, ${true_color_array[1]}, ${true_color_array[2]})`
+
+    // retrieve highscore for local storage
+    highscore = localStorage.getItem("highscore");
+
+    // reset highscore if applicable
+    if (highscore !== null){
+        if (score > highscore) {
+            localStorage.setItem("highscore", score);      
+        }
+    }
+    else {
+        localStorage.setItem("highscore", score);
+    }
+
+    // overlay game with an opaque white rectangle
+    svg.append('rect')
+        .attr('x', OUTER_MARGIN - 1)
+        .attr('y', OUTER_MARGIN - 1)
+        .attr('width', (3*SIZE) + (2*INNER_MARGIN) + 2)
+        .attr('height', (3*SIZE) + (2*INNER_MARGIN) + 2)
+        .attr('fill', 'white')
+        .style("opacity", 0.9)
+    
+    // print current highscore
+    svg.append("text")
+        .attr("x", B + (0.5*SIZE))
+        .attr("y", (0.5*OUTER_MARGIN))
+        .attr("dy", ".35em")
+        .attr("font-size","2em")
+        .style("text-anchor", "middle")
+        .style("fill",true_color)
+        .text(`highscore: ${localStorage.getItem("highscore")}`)
+
+    // print play button
+    svg.append("text")
+        .attr("x", B + (0.5*SIZE))
+        .attr("y", B + (0.5*SIZE))
+        .attr("dy", ".25em")
+        .attr("font-size","6em")
+        .style("text-anchor", "middle")
+        .style("fill",true_color)
+        .text('play')
+        .on('mouseover', function() {
+            d3.select(this)
+                .attr('stroke', true_color)
+        })
+        .on('mouseout', function() {
+            d3.select(this)
+                .attr('stroke', null)
+                .style("fill", true_color)
+        })
+        .on('click', function() {
+            restartGame(false)
+        })
+
+    }
+
+true_color_array = restartGame(true) // generate a game state for the intial menu screen
+openMenu(score, true_color_array) // open menu screen
